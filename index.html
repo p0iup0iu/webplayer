@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Sonora — Music Player</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,500;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <canvas id="viz" aria-hidden="true"></canvas>
+  <div class="vignette" aria-hidden="true"></div>
+
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true"></span>
+      <span class="brand-name">SONORA</span>
+      <span class="brand-sub">LOCAL PLAYER</span>
+    </div>
+    <div class="top-actions">
+      <span class="status-pill" id="statusPill"><i></i><span id="statusText">IDLE</span></span>
+    </div>
+  </header>
+
+  <main class="layout">
+
+    <aside class="library">
+      <div class="library-head">
+        <span class="label">LIBRARY</span>
+        <span class="count" id="trackCount">0 TRACKS</span>
+      </div>
+
+      <button class="add-btn" id="addBtn">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+        <span>ADD MUSIC</span>
+      </button>
+      <input type="file" id="fileInput" multiple accept="audio/*,.mp3,.m4a,.aac,.ogg" hidden />
+
+      <div class="library-meta">
+        <span class="label">SUPPORTS</span>
+        <span class="fmt">MP3 · M4A · AAC · OGG</span>
+      </div>
+
+      <ul class="track-list" id="trackList"></ul>
+
+      <div class="drop-overlay" id="dropOverlay">
+        <div class="drop-inner">
+          <span class="drop-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4m0 0L7 9m5-5l5 5M4 20h16"/></svg>
+          </span>
+          <p class="drop-title">DROP AUDIO FILES</p>
+          <p class="drop-sub">MP3, M4A &amp; other formats</p>
+        </div>
+      </div>
+    </aside>
+
+    <section class="stage">
+      <div class="stage-inner">
+
+        <div class="cover-wrap" id="coverWrap">
+          <canvas id="cover" width="640" height="640"></canvas>
+          <div class="cover-fallback" id="coverFallback">NO TRACK LOADED</div>
+        </div>
+
+        <div class="meta">
+          <h1 class="title" id="trackTitle">Nothing playing</h1>
+          <p class="artist" id="trackArtist">Add music to start</p>
+          <div class="tags">
+            <span class="tag" id="tagFmt">—</span>
+            <span class="tag" id="tagRate">—</span>
+            <span class="tag" id="tagTime">0:00</span>
+          </div>
+        </div>
+
+        <div class="transport">
+          <button class="tp-btn" id="prevBtn" title="Previous">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6v12M18 6L9 12l9 6M6 5v14"/></svg>
+          </button>
+          <button class="play-btn" id="playBtn" title="Play / Pause">
+            <svg class="ico-play" viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M7 4.5v15l13-7.5z"/></svg>
+            <svg class="ico-pause" viewBox="0 0 24 24" width="22" height="22" fill="currentColor" hidden><path d="M6 4h4v16H6zM14 4h4v16h-4z"/></svg>
+          </button>
+          <button class="tp-btn" id="nextBtn" title="Next">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6v12M6 6l9 6-9 6M18 5v14"/></svg>
+          </button>
+        </div>
+
+        <div class="timeline">
+          <div class="time" id="elapsed">0:00</div>
+          <div class="progress" id="progress">
+            <div class="progress-fill" id="progressFill"></div>
+            <div class="progress-thumb" id="progressThumb"></div>
+          </div>
+          <div class="time" id="duration">0:00</div>
+        </div>
+
+        <div class="controls-row">
+          <button class="icon-btn" id="shuffleBtn" title="Shuffle">
+            <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M17 4l3 3-3 3M17 14l3 3-3 3M3 7h4l10 10h4M3 17h4l3-3M14 7h3M14 17h3"/></svg>
+          </button>
+          <button class="icon-btn" id="repeatBtn" title="Repeat">
+            <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M17 2l4 4-4 4M3 11V9a4 4 0 0 1 4-4h13M7 22l-4-4 4-4M21 13v2a4 4 0 0 1-4 4H4"/></svg>
+          </button>
+          <button class="icon-btn" id="muteBtn" title="Mute">
+            <svg class="ico-sound" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6.5 9H3v6h3.5L11 19zM15 9.5a3.5 3.5 0 0 1 0 5M17.5 7a7 7 0 0 1 0 10"/></svg>
+            <svg class="ico-muted" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" hidden><path d="M11 5L6.5 9H3v6h3.5L11 19zM16 9.5l5 5M21 9.5l-5 5"/></svg>
+          </button>
+          <span class="spacer"></span>
+          <label class="volume">
+            <svg class="vol-icon" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6.5 9H3v6h3.5L11 19zM15 9.5a3.5 3.5 0 0 1 0 5M17.5 7a7 7 0 0 1 0 10"/></svg>
+            <input type="range" id="volume" min="0" max="100" value="78" aria-label="Volume" />
+          </label>
+        </div>
+
+      </div>
+    </section>
+  </main>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
